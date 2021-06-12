@@ -3,16 +3,21 @@
   hosts: prod
   become: true
   pre_tasks:
-    - name: Install package
-      package: '{{ package }}'
-      state: present
+    - name: Install some packages
+      package: name='{{ item }}' state=present
       when: ansible_distribution == "centOS"
       loop:
         - epel-release
         - wget
         - git
-    - name: Install python-pip
-      yum: name=python-pip state=present update_cache=yes
+    - name: Telecharger pip script
+      get_url:
+        url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
+        dest: /tmp/get-pip.py
+    - name: Installer python-pip
+      command: python2.7 /tmp/get-pip.py
+#    - name: Install python-pip
+#      yum: name=python-pip state=present update_cache=yes
     - name: Install docker python
       pip: name=docker-py
   tasks:
@@ -26,6 +31,5 @@
         image: httpd
         ports:
           - "80:80"
-        volume:
-          - /home/admin/index.html:/usr/local/apache2/htdoc
-      
+        volumes:
+          - /home/admin/index.html:/usr/local/apache2/htdocs/index.html
